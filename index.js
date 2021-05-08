@@ -51,7 +51,7 @@ app.post('/mergepdf', multer({ storage: storage }).array('files', 100), (req, re
                         fs.unlinkSync(file);
                     })
                     res.send("Some error takes place in downloading the file")
-
+                    return
                 }
                 fs.unlinkSync(outputFilePath)
                 files.forEach(file => {
