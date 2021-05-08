@@ -28,14 +28,6 @@ var storage = multer.diskStorage({
     }
 });
 
-var dir = "./uploads";
-var subdir = "./uploads";
-
-if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir);
-    fs.mkdirSync(subdir);
-}
-
 app.get('/mergepdf', (req, res) => {
     res.render('mergepdf', { title: "Concatenate or Merge Multiple PDF Files Online - Free Media Tools" })
 })
