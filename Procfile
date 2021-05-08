@@ -1,1 +1,1 @@
-web: node pdf_to_doc.js
+web: node index.js
