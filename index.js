@@ -7,13 +7,16 @@ var multer = require('multer')
 const path = require('path');
 
 const pdfMerge = require('easy-pdf-merge');
+const {exec} = require('child_process');
+//const libre = require('libreoffice-convert');
 
 const app = express();
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
-const PORT = process.env.PORT || 3000;
+
+const PORT = process.env.PORT || 5000;
 
 app.set("view engine", "ejs");
 app.use(express.static("public"));
@@ -28,9 +31,42 @@ var storage = multer.diskStorage({
     }
 });
 
+const imageFilter = function (req, file, cb) {
+    if (
+      file.mimetype == "image/png" ||
+      file.mimetype == "image/jpg" ||
+      file.mimetype == "image/jpeg"
+    ) {
+      cb(null, true);
+    } else {
+      cb(null, false);
+      return cb(new Error("Only .png, .jpg and .jpeg format allowed!"));
+    }
+};
+
+var upload = multer({ storage: storage, fileFilter: imageFilter });
+
+var dir = "public";
+var subDirectory = "public/uploads";
+
+if (!fs.existsSync(dir)) {
+  fs.mkdirSync(dir);
+
+  fs.mkdirSync(subDirectory);
+}
+
 app.get('/mergepdf', (req, res) => {
     res.render('mergepdf', { title: "Concatenate or Merge Multiple PDF Files Online - Free Media Tools" })
 })
+
+app.get('/imgtopdf', (req, res) => {
+    res.render('imgtopdf', { title: "Convert JPG or PNG files to PDF" })
+})
+
+app.get('/pdftopng',(req,res) => {
+    res.render('pdf_to_png',{title:"DOCX to PDF Converter - Free Media Tools"})
+})
+
 
 app.post('/mergepdf', multer({ storage: storage }).array('files', 100), (req, res) => {
     console.log(req.files);
@@ -51,7 +87,7 @@ app.post('/mergepdf', multer({ storage: storage }).array('files', 100), (req, re
                         fs.unlinkSync(file);
                     })
                     res.send("Some error takes place in downloading the file")
-                    return
+
                 }
                 fs.unlinkSync(outputFilePath)
                 files.forEach(file => {
@@ -64,9 +100,7 @@ app.post('/mergepdf', multer({ storage: storage }).array('files', 100), (req, re
     }
 })
 
-app.get('/pdftopng',(req,res) => {
-    res.render('pdf_to_png',{title:"DOCX to PDF Converter - Free Media Tools"})
-})
+
 const pdf_to_png = function (req, file, callback) {
     var ext = path.extname(file.originalname);
     if (ext !== ".pdf")
@@ -102,6 +136,44 @@ app.post('/pdftopng',pdftopng.single('file'),(req,res) => {
       },function(err){
         console.log(err);
       });
+    }
+})
+
+app.post('/imgtopdf', upload.array('files', 100), (req, res) => {
+    console.log(req.files);
+    var list = ""
+    outputFilePath = "public/uploads/" + Date.now() + "output.pdf"
+    if (req.files) {
+        req.files.forEach(file => {
+            console.log(file.path)
+            list+= `${file.path}`
+            list+= ""
+        });
+
+        exec(`magick convert ${list} ${outputFilePath}`, (err,stdout,stderr) => {
+            if (err){
+                fs.unlinkSync(req.file.path)
+                fs.unlinkSync(outputFilePath)
+        
+                res.send("some error taken place in conversion process")
+            }
+
+            res.download(outputFilePath,(err) => {
+                if (err){
+                    fs.unlinkSync(req.file.path)
+                    fs.unlinkSync(outputFilePath)
+            
+                    res.send("some error taken place in conversion process")
+                }
+                
+                req.files.forEach((file) => {
+                fs.unlinkSync(file.path);
+                });
+
+                fs.unlinkSync(outputFilePath);
+            })
+        })
+        
     }
 })
 
