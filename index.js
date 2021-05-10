@@ -67,7 +67,9 @@ app.get('/pdftopng',(req,res) => {
     res.render('pdf_to_png',{title:"DOCX to PDF Converter - Free Media Tools"})
 })
 
-
+app.get('/compresspdf',(req,res) => {
+    res.render('compresspdf',{title:"DOCX to PDF Converter - Free Media Tools"})
+})
 app.post('/mergepdf', multer({ storage: storage }).array('files', 100), (req, res) => {
     console.log(req.files);
     const files = []
@@ -131,7 +133,8 @@ app.post('/pdftopng',pdftopng.single('file'),(req,res) => {
               res.send("some error taken place in downloading the file")
               return
             }
-
+            fs.unlinkSync(req.file.path)
+            fs.unlinkSync(outputFilePath)
           })
       },function(err){
         console.log(err);
@@ -152,31 +155,70 @@ app.post('/imgtopdf', upload.array('files', 100), (req, res) => {
 
         exec(`magick convert ${list} ${outputFilePath}`, (err,stdout,stderr) => {
             if (err){
-                fs.unlinkSync(req.file.path)
-                fs.unlinkSync(outputFilePath)
-        
+                //fs.unlinkSync(req.file.path)
+                //fs.unlinkSync(outputFilePath)
+                console.log(err);
                 res.send("some error taken place in conversion process")
+                return
             }
 
             res.download(outputFilePath,(err) => {
                 if (err){
-                    fs.unlinkSync(req.file.path)
-                    fs.unlinkSync(outputFilePath)
-            
+                    //fs.unlinkSync(req.file.path)
+                    //fs.unlinkSync(outputFilePath)
+                    console.log(err);
                     res.send("some error taken place in conversion process")
+                    return
                 }
                 
                 req.files.forEach((file) => {
-                fs.unlinkSync(file.path);
+                //fs.unlinkSync(file.path);
                 });
 
-                fs.unlinkSync(outputFilePath);
+                //fs.unlinkSync(outputFilePath);
             })
         })
         
     }
 })
-
+const compresspdf = function (req, file, callback) {
+    var ext = path.extname(file.originalname);
+    if (ext !== ".pdf")
+    {
+      return callback("This Extension is not supported");
+    }
+    callback(null, true);
+};
+const compress_pdf= multer({storage:storage,fileFilter:compresspdf})
+app.post('/compresspdf',compress_pdf.single('file'),(req,res) => {
+    if(req.file)
+    {
+        inputFile=req.file.path;
+        outputFilePath = "public/uploads/" + Date.now() + "output.pdf";
+        exec(
+            `gs \ -q -dNOPAUSE -dBATCH -dSAFER \ -sDEVICE=pdfwrite \ -dCompatibilityLevel=1.3 \ -dPDFSETTINGS=/ebook \ -dEmbedAllFonts=true \ -dSubsetFonts=true \ -dAutoRotatePages=/None \ -dColorImageDownsampleType=/Bicubic \ -dColorImageResolution=72 \ -dGrayImageDownsampleType=/Bicubic \ -dGrayImageResolution=72 \ -dMonoImageDownsampleType=/Subsample \ -dMonoImageResolution=72 \ -sOutputFile=${outputFilePath} \ ${inputFile}`,
+            (err, stdout, stderr) => {
+              if (err) 
+              {
+                console.log(err);
+                res.send("Some error in compressing");
+                return;
+              }
+              res.download(outputFilePath,(err) => 
+                {
+                    if(err)
+                    {
+                        console.log(err);
+                        res.send("some error taken place in downloading the file")
+                        return
+                    }
+                    fs.unlinkSync(req.file.path)
+                    fs.unlinkSync(outputFilePath)
+                })
+            }
+          );
+    }
+})
 app.listen(PORT, () => {
     console.log(`The Server has started at port ${PORT}`);
 })
