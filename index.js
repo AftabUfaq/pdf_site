@@ -147,22 +147,29 @@ app.post('/imgtopdf', upload.array('files', 100), (req, res) => {
         req.files.forEach(file => {
             console.log(file.path)
             list+= `${file.path}`
-            list+= ""
+            list+=" "
         });
 
         exec(`magick convert ${list} ${outputFilePath}`, (err,stdout,stderr) => {
             if (err){
-                fs.unlinkSync(req.file.path)
+                //fs.unlinkSync(req.file.path)
+                req.files.forEach((file) => {
+                    fs.unlinkSync(file.path);
+                });
                 fs.unlinkSync(outputFilePath)
+                console.log(err)
         
                 res.send("some error taken place in conversion process")
             }
 
             res.download(outputFilePath,(err) => {
                 if (err){
-                    fs.unlinkSync(req.file.path)
+                    //fs.unlinkSync(req.file.path)
+                    req.files.forEach((file) => {
+                        fs.unlinkSync(file.path);
+                    });
                     fs.unlinkSync(outputFilePath)
-            
+                    console.log(err)
                     res.send("some error taken place in conversion process")
                 }
                 
