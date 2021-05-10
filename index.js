@@ -66,6 +66,9 @@ app.get('/imgtopdf', (req, res) => {
 app.get('/pdftopng',(req,res) => {
     res.render('pdf_to_png',{title:"DOCX to PDF Converter - Free Media Tools"})
 })
+app.get('/pagenopdf',(req,res) => {
+    res.render('pageno.ejs',{title:"DOCX to PDF Converter - Free Media Tools"})
+})
 
 app.get('/compresspdf',(req,res) => {
     res.render('compresspdf',{title:"DOCX to PDF Converter - Free Media Tools"})
@@ -217,6 +220,42 @@ app.post('/compresspdf',compress_pdf.single('file'),(req,res) => {
                 })
             }
           );
+    }
+})
+const { PDFDocument, StandardFonts, rgb } = require('pdf-lib');
+const pageno_pdf= multer({storage:storage,fileFilter:compresspdf})
+app.post('/pagenopdf',pageno_pdf.single('file'),(req,res) => {
+    if(req.file)
+    {
+        outputFilePath = "public/uploads/" + Date.now() + "output.pdf";
+        run().catch(err => console.log(err));
+        async function run() {
+        const content = await PDFDocument.load(fs.readFileSync(req.file.path));
+        const helveticaFont = await content.embedFont(StandardFonts.Helvetica);
+        const pages = await content.getPages();
+        for (const [i, page] of Object.entries(pages)) {
+            page.drawText(`Page No:- ${+i + 1}`, {
+            x: page.getWidth() / 2,
+            y: 10,
+            size: 15,
+            font: helveticaFont,
+            color: rgb(1, 0.62, 0)
+        });
+        }
+        fs.writeFileSync(outputFilePath, await content.save());
+        console.log(outputFilePath)
+        res.download(outputFilePath,(err) => 
+        {
+            if(err)
+            {
+                console.log(err);
+                res.send("some error taken place in downloading the file")
+                return
+            }
+            fs.unlinkSync(req.file.path)
+            fs.unlinkSync(outputFilePath)
+        })
+        }
     }
 })
 app.listen(PORT, () => {
