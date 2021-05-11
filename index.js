@@ -8,6 +8,7 @@ const path = require('path');
 
 const pdfMerge = require('easy-pdf-merge');
 const {exec} = require('child_process');
+const scissors = require('scissors');
 //const libre = require('libreoffice-convert');
 
 const app = express();
@@ -73,6 +74,14 @@ app.get('/pagenopdf',(req,res) => {
 app.get('/compresspdf',(req,res) => {
     res.render('compresspdf',{title:"DOCX to PDF Converter - Free Media Tools"})
 })
+app.get('/rotatepdf', (req, res) => {
+    res.render('rotatepdf', { title: "Rotate PDF" })
+  })
+
+app.get('/reversepdf', (req, res) => {
+    res.render('reversepdf', { title: "Reverse PDF" })
+  })
+
 app.post('/mergepdf', multer({ storage: storage }).array('files', 100), (req, res) => {
     console.log(req.files);
     const files = []
@@ -262,6 +271,83 @@ app.post('/pagenopdf',pageno_pdf.single('file'),(req,res) => {
         })
         }
     }
+})
+app.post('/rotatepdf', multer({ storage: storage }).array('files', 1), (req, res) => {
+    console.log(req.files);
+    const files = []
+    if (req.files) {
+        req.files.forEach(file => {
+            console.log(file.path)
+            files.push(file.path)
+        });
+    //const file = fs.readFileSync(files[0])
+    var rotated = scissors(files[0]).rotate(90)
+    rotated.pdfStream()
+   .pipe(fs.createWriteStream('out.pdf'))
+   .on('finish', function(){
+     console.log("We're done!");
+        //outputFilePath = "./uploads/" + Date.now() + "out.pdf"
+            res.download("out.pdf", (err) => {
+                if (err) {
+                    files.forEach(file => {
+                        console.log(file.split('\\')[1]);
+                        fs.unlinkSync(file);
+                    })
+                    res.send("Some error takes place in downloading the file")
+
+                }
+                fs.unlinkSync("out.pdf")
+                files.forEach(file => {
+                    console.log(file.split('\\')[1]);
+                    fs.unlinkSync(file);
+            })
+
+        })
+   }).on('error',function(err){
+     throw err;
+   });
+
+    
+     }
+})
+
+app.post('/reversepdf', multer({ storage: storage }).array('files', 1), (req, res) => {
+    console.log(req.files);
+    const files = []
+    if (req.files) {
+        req.files.forEach(file => {
+            console.log(file.path)
+            files.push(file.path)
+        });
+    //const file = fs.readFileSync(files[0])
+    var reverse = scissors(files[0]).reverse()
+    reverse.pdfStream()
+   .pipe(fs.createWriteStream('out.pdf'))
+   .on('finish', function(){
+     console.log("We're done!");
+        //outputFilePath = "./uploads/" + Date.now() + "out.pdf"
+            res.download("out.pdf", (err) => {
+                if (err) {
+                    files.forEach(file => {
+                        console.log(file.split('\\')[1]);
+                        fs.unlinkSync(file);
+                    })
+                    res.send("Some error takes place in downloading the file")
+
+                }
+                fs.unlinkSync("out.pdf")
+                files.forEach(file => {
+                    console.log(file.split('\\')[1]);
+                    fs.unlinkSync(file);
+            })
+
+        })
+   }).on('error',function(err){
+     throw err;
+   });
+
+    
+     }
 })
 app.listen(PORT, () => {
     console.log(`The Server has started at port ${PORT}`);
