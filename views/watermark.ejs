@@ -1,0 +1,30 @@
+<html lang="en">
+  <head>
+    <title>DOCX to PDF Converter</title>
+    <link
+      rel="stylesheet"
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+    />
+  </head>
+  <body>
+      <div class="container">
+          <h1 class="text-center">
+              ADD WATERMARK
+          </h1>
+          <form action="/watermark" method="post" enctype="multipart/form-data">
+            <div class="form-group">
+                <input type="file" name="file" id="" required class="form-control">
+            </div>
+            <div clas="form-group">
+                <input type="text" name="text" id="" required class="form-control">
+            </div>
+            <div class="form-group">
+                <button class="btn btn-danger btn-block">
+                    Convert to DOCX
+                </button>
+            </div>
+        </form>
+      </div>
+</body>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+</html>

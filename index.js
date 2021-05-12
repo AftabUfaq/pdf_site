@@ -1,7 +1,5 @@
 const express = require("express");
-
 const bodyParser = require("body-parser");
-
 const fs = require("fs");
 var multer = require('multer')
 const path = require('path');
@@ -81,6 +79,9 @@ app.get('/rotatepdf', (req, res) => {
 app.get('/reversepdf', (req, res) => {
     res.render('reversepdf', { title: "Reverse PDF" })
   })
+app.get('/watermark', (req, res) => {
+    res.render('watermark', { title: "Reverse PDF" })
+})
 
 app.post('/mergepdf', multer({ storage: storage }).array('files', 100), (req, res) => {
     console.log(req.files);
@@ -236,7 +237,7 @@ app.post('/compresspdf',compress_pdf.single('file'),(req,res) => {
           );
     }
 })
-const { PDFDocument, StandardFonts, rgb } = require('pdf-lib');
+const { PDFDocument, StandardFonts, rgb, degrees } = require('pdf-lib');
 const pageno_pdf= multer({storage:storage,fileFilter:compresspdf})
 app.post('/pagenopdf',pageno_pdf.single('file'),(req,res) => {
     if(req.file)
@@ -349,6 +350,43 @@ app.post('/reversepdf', multer({ storage: storage }).array('files', 1), (req, re
     
      }
 })
+const watermark_pdf= multer({storage:storage,fileFilter:compresspdf})
+app.post('/watermark',watermark_pdf.single('file'),(req,res) => {
+    if(req.file)
+    {
+        outputFilePath = "public/uploads/" + Date.now() + "output.pdf";
+        run().catch(err => console.log(err));
+        async function run() {
+        const content = await PDFDocument.load(fs.readFileSync(req.file.path));
+        const helveticaFont = await content.embedFont(StandardFonts.Helvetica);
+        const pages = await content.getPages();
+        for (const [i, page] of Object.entries(pages)) {
+            page.drawText(req.body.text, {
+                x: page.getWidth()/req.body.text.length+1,
+                y: 2*page.getHeight()/(req.body.text.length+1),
+                size: 50,
+                color: rgb(0.95, 0.1, 0.1),
+                rotate: degrees(55),
+                opacity: 0.2
+              });
+        }
+        fs.writeFileSync(outputFilePath, await content.save());
+        console.log(outputFilePath)
+        res.download(outputFilePath,(err) => 
+        {
+            if(err)
+            {
+                console.log(err);
+                res.send("some error taken place in downloading the file")
+                return
+            }
+            fs.unlinkSync(req.file.path)
+            fs.unlinkSync(outputFilePath)
+        })
+        }
+    }
+})
+
 app.listen(PORT, () => {
     console.log(`The Server has started at port ${PORT}`);
 })
