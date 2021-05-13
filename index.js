@@ -8,6 +8,7 @@ const path = require('path');
 
 const pdfMerge = require('easy-pdf-merge');
 const {exec} = require('child_process');
+const puppeteer = require('puppeteer-core');
 //const libre = require('libreoffice-convert');
 
 const app = express();
@@ -65,6 +66,10 @@ app.get('/imgtopdf', (req, res) => {
 
 app.get('/pdftopng',(req,res) => {
     res.render('pdf_to_png',{title:"DOCX to PDF Converter - Free Media Tools"})
+})
+
+app.get('/htmltopdf', (req, res) => {
+    res.render('htmltopdf', { title: "Convert HTML to PDF" })
 })
 
 
@@ -182,6 +187,36 @@ app.post('/imgtopdf', upload.array('files', 100), (req, res) => {
         })
         
     }
+})
+
+app.post('/htmltopdf',multer({ storage: storage }).array('address', 1),(req,res)=>{
+    console.log(req.body.address);
+    outputFilePath = "public/uploads/" + Date.now() + "output.pdf";
+    (async () => {
+        const browser = await puppeteer.launch({
+            executablePath:'C:/Program Files (x86)/Google/Chrome/Application/chrome.exe'
+        });
+        const page = await browser.newPage();
+        await page.goto(`${req.body.address}`, {
+          waitUntil: 'networkidle2',
+        });
+        await page.pdf({ path: `${outputFilePath}`, format: 'a4' });
+
+        res.download(outputFilePath,(err) => {
+            if (err){
+                fs.unlinkSync(req.file.path)
+                fs.unlinkSync(outputFilePath)
+                console.log(err)
+                res.send("some error taken place in conversion process")
+            }
+            
+            fs.unlinkSync(req.file.path);
+
+            fs.unlinkSync(outputFilePath);
+        })
+      
+        await browser.close();
+    })();
 })
 
 app.listen(PORT, () => {
