@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Split PDF Files in Node and Express</title>
+    <link
+      rel="stylesheet"
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+    />
+  </head>
+  <body>
+      <div class="container">
+          <h1 class="text-center">
+              Split PDF File
+          </h1>
+          <form action="/splitpdf" method="post" enctype="multipart/form-data">
+            <div class="form-group">
+                <label for="files">Upload Single PDF File:</label>
+                <input type="file" name="files" class="form-control" accept="application/pdf,application/vnd.ms-excel" required id="">
+            </div>
+            <div class="form-group">
+              <label for="pagestart">Starting Page number:</label>
+              <input type="number" name="pagestart" class="form-control"  required id="">
+          </div>
+          <div class="form-group">
+            <label for="pageend">Ending Page number:</label>
+            <input type="number" name="pageend" class="form-control"  required id="">
+        </div>
+            <div class="form-group">
+                <button class="btn btn-danger btn-block">
+                    Split PDF
+                </button>
+            </div>
+        </form>
+      </div>
+</body>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+</html>
