@@ -362,8 +362,8 @@ app.post('/watermark',watermark_pdf.single('file'),(req,res) => {
         const pages = await content.getPages();
         for (const [i, page] of Object.entries(pages)) {
             page.drawText(req.body.text, {
-                x: page.getWidth()/req.body.text.length+1,
-                y: 2*page.getHeight()/(req.body.text.length+1),
+                x: page.getWidth()/2-8*req.body.text.length,
+                y: 5*page.getHeight()/(2*req.body.text.length+1),
                 size: 50,
                 color: rgb(0.95, 0.1, 0.1),
                 rotate: degrees(55),
