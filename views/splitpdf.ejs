@@ -15,8 +15,16 @@
           <form action="/splitpdf" method="post" enctype="multipart/form-data">
             <div class="form-group">
                 <label for="files">Upload Single PDF File:</label>
-                <input type="file" multiple name="files" class="form-control" accept="application/pdf,application/vnd.ms-excel" required id="">
+                <input type="file" name="files" class="form-control" accept="application/pdf,application/vnd.ms-excel" required id="">
             </div>
+            <div class="form-group">
+              <label for="pagestart">Starting Page number:</label>
+              <input type="number" name="pagestart" class="form-control"  required id="">
+          </div>
+          <div class="form-group">
+            <label for="pageend">Ending Page number:</label>
+            <input type="number" name="pageend" class="form-control"  required id="">
+        </div>
             <div class="form-group">
                 <button class="btn btn-danger btn-block">
                     Split PDF

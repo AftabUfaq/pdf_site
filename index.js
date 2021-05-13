@@ -76,9 +76,9 @@ app.get('/reversepdf', (req, res) => {
     res.render('reversepdf', { title: "Reverse PDF" })
   })
 
-// app.get('/splitpdf', (req, res) => {
-//     res.render('splitpdf', { title: "Split PDF" })
-// })
+app.get('/splitpdf', (req, res) => {
+    res.render('splitpdf', { title: "Split PDF" })
+})
 
 app.post('/mergepdf', multer({ storage: storage }).array('files', 100), (req, res) => {
     console.log(req.files);
@@ -267,71 +267,57 @@ app.post('/reversepdf', multer({ storage: storage }).array('files', 1), (req, re
      }
 })
 
-// app.post('/splitpdf', multer({ storage: storage }).array('files', 1), (req, res) => {
-//     console.log(req.files);
-//     const files = []
-//     if (req.files) {
-//         req.files.forEach(file => {
-//             console.log(file.path)
-//             files.push(file.path)
-//         });
-//     //const file = fs.readFileSync(files[0])
-//     var pg = scissors(files[0]).getNumPages()
-//     var pdf1=scissors(files[0]).range(1,2)
-//     var pdf2=scissors(files[0]).range(2,5)
-//     pdf1.pdfStream()
-//    .pipe(fs.createWriteStream('out1.pdf'))
-//    .on('finish', function(){
-//      console.log("We're done!");
-//         //outputFilePath = "./uploads/" + Date.now() + "out.pdf"
-//             res.download("out1.pdf", (err) => {
-//                 if (err) {
-//                     files.forEach(file => {
-//                         console.log(file.split('\\')[1]);
-//                         //fs.unlinkSync(file);
-//                     })
-//                     res.send("Some error takes place in downloading the file")
+app.post('/splitpdf', multer({ storage: storage }).fields([{
+    name: 'files', maxCount: 1
+  },{
+    name: 'pagestart', maxCount: 1
+  }, {
+    name: 'pageend', maxCount: 1
+  }]), (req, res) => {
+     var srt=req.body.pagestart
+     var end=req.body.pageend
+     console.log(srt)
+     console.log(end)
+    console.log(req.files.files[0].path);
+     const files = []
+     if (req.files) {
+//         // req.files.forEach(file => {
+//         //     console.log(file.path)
+//         //     files.push(file.path)
+//         // });
+        files.push(req.files.files[0].path)
+    //const file = fs.readFileSync(files[0])
+    var pg = scissors(files[0]).getNumPages()
+    var pdf1=scissors(files[0]).range(srt,end)
+    pdf1.pdfStream()
+   .pipe(fs.createWriteStream('out1.pdf'))
+   .on('finish', function(){
+     console.log("We're done!");
+        //outputFilePath = "./uploads/" + Date.now() + "out.pdf"
+            res.download("out1.pdf", (err) => {
+                if (err) {
+                    files.forEach(file => {
+                        console.log(file.split('\\')[1]);
+                        //fs.unlinkSync(file);
+                    })
+                    res.send("Some error takes place in downloading the file")
 
-//                 }
-//                 fs.unlinkSync("out1.pdf")
-//                 files.forEach(file => {
-//                     console.log(file.split('\\')[1]);
-//                     //fs.unlinkSync(file);
-//             })
-//         })
-
-    
-//    }).on('error',function(err){
-//      throw err;
-//    });
-
-//    pdf2.pdfStream()
-//    .pipe(fs.createWriteStream('out2.pdf'))
-//    .on('finish', function(){
-//      console.log("We're done!");
-//         //outputFilePath = "./uploads/" + Date.now() + "out.pdf"
-//             res.download("out2.pdf", (err) => {
-//                 if (err) {
-//                     files.forEach(file => {
-//                         console.log(file.split('\\')[1]);
-//                         fs.unlinkSync(file);
-//                     })
-//                     res.send("Some error takes place in downloading the file")
-
-//                 }
-//                 fs.unlinkSync("out2.pdf")
-//                 files.forEach(file => {
-//                     console.log(file.split('\\')[1]);
-//                     fs.unlinkSync(file);
-//             })
-//         })
+                }
+                fs.unlinkSync("out1.pdf")
+                files.forEach(file => {
+                    console.log(file.split('\\')[1]);
+                    //fs.unlinkSync(file);
+            })
+        })
 
     
-//    }).on('error',function(err){
-//      throw err;
-//    });
-//      }
-// })
+   }).on('error',function(err){
+     throw err;
+   });
+
+   
+     }
+})
 
 
 
