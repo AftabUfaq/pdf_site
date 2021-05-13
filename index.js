@@ -82,7 +82,9 @@ app.get('/reversepdf', (req, res) => {
 app.get('/watermark', (req, res) => {
     res.render('watermark', { title: "Reverse PDF" })
 })
-
+app.get('/imagewatermark', (req, res) => {
+    res.render('imagewatermark', { title: "Reverse PDF" })
+})
 app.post('/mergepdf', multer({ storage: storage }).array('files', 100), (req, res) => {
     console.log(req.files);
     const files = []
@@ -354,6 +356,7 @@ const watermark_pdf= multer({storage:storage,fileFilter:compresspdf})
 app.post('/watermark',watermark_pdf.single('file'),(req,res) => {
     if(req.file)
     {
+        console.log('hi');
         outputFilePath = "public/uploads/" + Date.now() + "output.pdf";
         run().catch(err => console.log(err));
         async function run() {
@@ -386,7 +389,66 @@ app.post('/watermark',watermark_pdf.single('file'),(req,res) => {
         }
     }
 })
-
+const imagewater = (req, file, cb) => {
+    if (file.fieldname === "file") { // if uploading resume
+      if (file.mimetype === 'application/pdf')
+      { 
+        cb(null, true);
+      } 
+      else
+      {
+        cb(null, false); 
+      }
+    } 
+    else{
+      if (file.mimetype === 'image/png' || file.mimetype === 'image/jpeg')
+      { 
+        cb(null, true);
+      } 
+      else
+      {
+        cb(null, false);
+      }
+    }
+  };
+const imagewatermark_pdf= multer({storage:storage,fileFilter:imagewater})
+app.post('/imagewatermark',multer({storage:storage}).fields([{name: 'file'},{name: 'image'}]),(req,res) => {
+    if(req.files)
+    {
+        console.log(req.files['file'][0]['path'])
+        run().catch(err => console.log(err));
+        async function run() {
+        const pdfDoc = await PDFDocument.load(fs.readFileSync(req.files['file'][0]['path']));
+        const img = await pdfDoc.embedPng(fs.readFileSync(req.files['image'][0]['path']));
+        const pages = await pdfDoc.getPages();
+        for (const [i, page] of Object.entries(pages)) 
+        {
+            page.drawImage(img, {
+            x: page.getWidth()/3,
+            y: page.getWidth()/3,
+            width: page.getWidth()/3,
+            height: page.getHeight()/3,
+            opacity: 0.2 
+            });
+        }
+        const pdfBytes = await pdfDoc.save();
+        outputFilePath = "public/uploads/" + Date.now() + "output.pdf";
+        fs.writeFileSync(outputFilePath, pdfBytes);
+        res.download(outputFilePath,(err) => 
+        {
+            if(err)
+            {
+                console.log(err);
+                res.send("some error taken place in downloading the file")
+                return
+            }
+            //fs.unlinkSync(req.file.path)
+            fs.unlinkSync(outputFilePath)
+        })
+    }
+        
+    }
+})
 app.listen(PORT, () => {
     console.log(`The Server has started at port ${PORT}`);
 })
