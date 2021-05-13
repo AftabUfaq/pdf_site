@@ -442,7 +442,8 @@ app.post('/imagewatermark',multer({storage:storage}).fields([{name: 'file'},{nam
                 res.send("some error taken place in downloading the file")
                 return
             }
-            //fs.unlinkSync(req.file.path)
+            fs.unlinkSync(req.files['file'][0]['path'])
+            fs.unlinkSync(req.files['image'][0]['path'])
             fs.unlinkSync(outputFilePath)
         })
     }
