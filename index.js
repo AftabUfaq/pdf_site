@@ -1,12 +1,14 @@
 const express = require("express");
+
 const bodyParser = require("body-parser");
+
 const fs = require("fs");
 var multer = require('multer')
 const path = require('path');
 
 const pdfMerge = require('easy-pdf-merge');
 const {exec} = require('child_process');
-const scissors = require('scissors');
+const puppeteer = require('puppeteer-core');
 //const libre = require('libreoffice-convert');
 
 const app = express();
@@ -65,23 +67,11 @@ app.get('/imgtopdf', (req, res) => {
 app.get('/pdftopng',(req,res) => {
     res.render('pdf_to_png',{title:"DOCX to PDF Converter - Free Media Tools"})
 })
-app.get('/pagenopdf',(req,res) => {
-    res.render('pageno.ejs',{title:"DOCX to PDF Converter - Free Media Tools"})
+
+app.get('/htmltopdf', (req, res) => {
+    res.render('htmltopdf', { title: "Convert HTML to PDF" })
 })
 
-app.get('/compresspdf',(req,res) => {
-    res.render('compresspdf',{title:"DOCX to PDF Converter - Free Media Tools"})
-})
-app.get('/rotatepdf', (req, res) => {
-    res.render('rotatepdf', { title: "Rotate PDF" })
-  })
-
-app.get('/reversepdf', (req, res) => {
-    res.render('reversepdf', { title: "Reverse PDF" })
-  })
-app.get('/watermark', (req, res) => {
-    res.render('watermark', { title: "Reverse PDF" })
-})
 
 app.post('/mergepdf', multer({ storage: storage }).array('files', 100), (req, res) => {
     console.log(req.files);
@@ -146,8 +136,7 @@ app.post('/pdftopng',pdftopng.single('file'),(req,res) => {
               res.send("some error taken place in downloading the file")
               return
             }
-            fs.unlinkSync(req.file.path)
-            fs.unlinkSync(outputFilePath)
+
           })
       },function(err){
         console.log(err);
@@ -163,7 +152,7 @@ app.post('/imgtopdf', upload.array('files', 100), (req, res) => {
         req.files.forEach(file => {
             console.log(file.path)
             list+= `${file.path}`
-            list+= ""
+            list+=" "
         });
 
         exec(`magick convert ${list} ${outputFilePath}`, (err,stdout,stderr) => {
@@ -199,192 +188,35 @@ app.post('/imgtopdf', upload.array('files', 100), (req, res) => {
         
     }
 })
-const compresspdf = function (req, file, callback) {
-    var ext = path.extname(file.originalname);
-    if (ext !== ".pdf")
-    {
-      return callback("This Extension is not supported");
-    }
-    callback(null, true);
-};
-const compress_pdf= multer({storage:storage,fileFilter:compresspdf})
-app.post('/compresspdf',compress_pdf.single('file'),(req,res) => {
-    if(req.file)
-    {
-        inputFile=req.file.path;
-        outputFilePath = "public/uploads/" + Date.now() + "output.pdf";
-        exec(
-            `gs \ -q -dNOPAUSE -dBATCH -dSAFER \ -sDEVICE=pdfwrite \ -dCompatibilityLevel=1.3 \ -dPDFSETTINGS=/ebook \ -dEmbedAllFonts=true \ -dSubsetFonts=true \ -dAutoRotatePages=/None \ -dColorImageDownsampleType=/Bicubic \ -dColorImageResolution=72 \ -dGrayImageDownsampleType=/Bicubic \ -dGrayImageResolution=72 \ -dMonoImageDownsampleType=/Subsample \ -dMonoImageResolution=72 \ -sOutputFile=${outputFilePath} \ ${inputFile}`,
-            (err, stdout, stderr) => {
-              if (err) 
-              {
-                console.log(err);
-                res.send("Some error in compressing");
-                return;
-              }
-              res.download(outputFilePath,(err) => 
-                {
-                    if(err)
-                    {
-                        console.log(err);
-                        res.send("some error taken place in downloading the file")
-                        return
-                    }
-                    fs.unlinkSync(req.file.path)
-                    fs.unlinkSync(outputFilePath)
-                })
-            }
-          );
-    }
-})
-const { PDFDocument, StandardFonts, rgb, degrees } = require('pdf-lib');
-const pageno_pdf= multer({storage:storage,fileFilter:compresspdf})
-app.post('/pagenopdf',pageno_pdf.single('file'),(req,res) => {
-    if(req.file)
-    {
-        outputFilePath = "public/uploads/" + Date.now() + "output.pdf";
-        run().catch(err => console.log(err));
-        async function run() {
-        const content = await PDFDocument.load(fs.readFileSync(req.file.path));
-        const helveticaFont = await content.embedFont(StandardFonts.Helvetica);
-        const pages = await content.getPages();
-        for (const [i, page] of Object.entries(pages)) {
-            page.drawText(`Page No:- ${+i + 1}`, {
-            x: page.getWidth() / 2,
-            y: 10,
-            size: 15,
-            font: helveticaFont,
-            color: rgb(1, 0.62, 0)
+
+app.post('/htmltopdf',multer({ storage: storage }).array('address', 1),(req,res)=>{
+    console.log(req.body.address);
+    outputFilePath = "public/uploads/" + Date.now() + "output.pdf";
+    (async () => {
+        const browser = await puppeteer.launch({
+            executablePath:'C:/Program Files (x86)/Google/Chrome/Application/chrome.exe'
         });
-        }
-        fs.writeFileSync(outputFilePath, await content.save());
-        console.log(outputFilePath)
-        res.download(outputFilePath,(err) => 
-        {
-            if(err)
-            {
-                console.log(err);
-                res.send("some error taken place in downloading the file")
-                return
-            }
-            fs.unlinkSync(req.file.path)
-            fs.unlinkSync(outputFilePath)
-        })
-        }
-    }
-})
-app.post('/rotatepdf', multer({ storage: storage }).array('files', 1), (req, res) => {
-    console.log(req.files);
-    const files = []
-    if (req.files) {
-        req.files.forEach(file => {
-            console.log(file.path)
-            files.push(file.path)
+        const page = await browser.newPage();
+        await page.goto(`${req.body.address}`, {
+          waitUntil: 'networkidle2',
         });
-    //const file = fs.readFileSync(files[0])
-    var rotated = scissors(files[0]).rotate(90)
-    rotated.pdfStream()
-   .pipe(fs.createWriteStream('out.pdf'))
-   .on('finish', function(){
-     console.log("We're done!");
-        //outputFilePath = "./uploads/" + Date.now() + "out.pdf"
-            res.download("out.pdf", (err) => {
-                if (err) {
-                    files.forEach(file => {
-                        console.log(file.split('\\')[1]);
-                        fs.unlinkSync(file);
-                    })
-                    res.send("Some error takes place in downloading the file")
+        await page.pdf({ path: `${outputFilePath}`, format: 'a4' });
 
-                }
-                fs.unlinkSync("out.pdf")
-                files.forEach(file => {
-                    console.log(file.split('\\')[1]);
-                    fs.unlinkSync(file);
-            })
-
-        })
-   }).on('error',function(err){
-     throw err;
-   });
-
-    
-     }
-})
-
-app.post('/reversepdf', multer({ storage: storage }).array('files', 1), (req, res) => {
-    console.log(req.files);
-    const files = []
-    if (req.files) {
-        req.files.forEach(file => {
-            console.log(file.path)
-            files.push(file.path)
-        });
-    //const file = fs.readFileSync(files[0])
-    var reverse = scissors(files[0]).reverse()
-    reverse.pdfStream()
-   .pipe(fs.createWriteStream('out.pdf'))
-   .on('finish', function(){
-     console.log("We're done!");
-        //outputFilePath = "./uploads/" + Date.now() + "out.pdf"
-            res.download("out.pdf", (err) => {
-                if (err) {
-                    files.forEach(file => {
-                        console.log(file.split('\\')[1]);
-                        fs.unlinkSync(file);
-                    })
-                    res.send("Some error takes place in downloading the file")
-
-                }
-                fs.unlinkSync("out.pdf")
-                files.forEach(file => {
-                    console.log(file.split('\\')[1]);
-                    fs.unlinkSync(file);
-            })
-
-        })
-   }).on('error',function(err){
-     throw err;
-   });
-
-    
-     }
-})
-const watermark_pdf= multer({storage:storage,fileFilter:compresspdf})
-app.post('/watermark',watermark_pdf.single('file'),(req,res) => {
-    if(req.file)
-    {
-        outputFilePath = "public/uploads/" + Date.now() + "output.pdf";
-        run().catch(err => console.log(err));
-        async function run() {
-        const content = await PDFDocument.load(fs.readFileSync(req.file.path));
-        const helveticaFont = await content.embedFont(StandardFonts.Helvetica);
-        const pages = await content.getPages();
-        for (const [i, page] of Object.entries(pages)) {
-            page.drawText(req.body.text, {
-                x: page.getWidth()/2-8*req.body.text.length,
-                y: 5*page.getHeight()/(2*req.body.text.length+1),
-                size: 50,
-                color: rgb(0.95, 0.1, 0.1),
-                rotate: degrees(55),
-                opacity: 0.2
-              });
-        }
-        fs.writeFileSync(outputFilePath, await content.save());
-        console.log(outputFilePath)
-        res.download(outputFilePath,(err) => 
-        {
-            if(err)
-            {
-                console.log(err);
-                res.send("some error taken place in downloading the file")
-                return
+        res.download(outputFilePath,(err) => {
+            if (err){
+                fs.unlinkSync(req.file.path)
+                fs.unlinkSync(outputFilePath)
+                console.log(err)
+                res.send("some error taken place in conversion process")
             }
-            fs.unlinkSync(req.file.path)
-            fs.unlinkSync(outputFilePath)
+            
+            fs.unlinkSync(req.file.path);
+
+            fs.unlinkSync(outputFilePath);
         })
-        }
-    }
+      
+        await browser.close();
+    })();
 })
 
 app.listen(PORT, () => {
