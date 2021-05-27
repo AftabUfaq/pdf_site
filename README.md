@@ -1,4 +1,4 @@
-# Features Updates
+# Features Updated
 
  Added features
  
