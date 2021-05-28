@@ -14,3 +14,5 @@
 10. watermark in pdf
 11. pdf to img
 12. doc to pdf
+13. ppt to pdf
+14. excel to pdf
