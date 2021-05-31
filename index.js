@@ -12,6 +12,7 @@ const puppeteer = require('puppeteer-core');
 //const libre = require('libreoffice-convert');
 const scissors = require('scissors');
 const app = express();
+var convertapi = require('convertapi')('yFG0IdFN6xoCsS9k');
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
@@ -98,6 +99,16 @@ app.get('/pdftoxlsx', (req, res) => {
 app.get('/unlockpdf', (req, res) => {
     res.render('unlockpdf', { title: "Remove password to PDF" })
 })
+
+app.get('/pdf-to-pdfa', (req, res) => {
+    convertapi.convert('pdfa', {
+        File: 'public/uploads/int.pdf'
+    }, 'pdf').then(function(result) {
+        result.saveFiles('public/uploads/output_file.pdfa');
+    });
+})
+
+
 app.post('/mergepdf', multer({ storage: storage }).array('files', 100), (req, res) => {
     console.log(req.files);
     const files = []
