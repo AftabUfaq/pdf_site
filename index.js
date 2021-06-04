@@ -1,5 +1,4 @@
 const express = require("express");
-
 const bodyParser = require("body-parser");
 
 const fs = require("fs");
@@ -95,9 +94,13 @@ app.get('/pdftodoc', (req, res) => {
 app.get('/pdftoxlsx', (req, res) => {
     res.render('pdftoexcel', { title: "Convert Office to PDF" })
 })
+app.get('/pdftoppt', (req, res) => {
+    res.render('pdftoppt', { title: "Convert Office to PDF" })
+})
 app.get('/unlockpdf', (req, res) => {
     res.render('unlockpdf', { title: "Remove password to PDF" })
 })
+
 app.post('/mergepdf', multer({ storage: storage }).array('files', 100), (req, res) => {
     console.log(req.files);
     const files = []
@@ -176,6 +179,20 @@ const pdf_to_png = function (req, file, callback) {
     callback(null, true);
 };
 const pdftopng= multer({storage:storage,fileFilter:pdf_to_png})
+const {Powerpoint}=require('pdf-officegen')
+app.post('/pdftoppt', pdftopng.single('file'), (req, res) => {
+    outputFilePath = "public/uploads/" + "output"+ Date.now() +".pdf"
+    if (req.file)
+    {
+        console.log(req.file)
+        files=[]
+        files.push(req.file.path)
+        const p = new Powerpoint();
+        console.log(files)
+        p.convertFromPdf(files, (err, result) => {
+        })
+    }
+})
 app.post('/pdftopng',pdftopng.single('file'),(req,res) => {
     if(req.file){
       console.log(req.file.path)
