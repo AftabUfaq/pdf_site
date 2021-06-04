@@ -1,0 +1,54 @@
+:root {
+    --color-primary: #F63344;
+    --color-primary-light: #FF363F;
+    --color-primary-dark: #ED3360;
+    --color-grey-light-1: #faf9f9;
+    --color-grey-light-2: #f4f2f2;
+    --color-grey-light-3: #f0eeee;
+    --color-grey-light-4: #ccc;
+    --color-grey-dark-1: #333;
+    --color-grey-dark-2: #777;
+    --color-grey-dark-3: #999;
+    --shadow-dark: 0 2rem 6rem rgba(0, 0, 0, .3);
+    --shadow-light: 0 2rem 5rem rgba(0, 0, 0, .06);
+    --line: 3px solid var(--color-grey-light-2);
+}
+.cards {
+    
+  }
+
+
+.cards-container{
+    margin: auto;width: 80%;
+}
+
+.cards__item{
+    display: inline-block;
+    border: 3px solid gold;
+    width: 250px;
+    margin: 10px 10px 10px 10px;
+    border-radius: 10px;
+}
+
+ul{
+    display: flex;
+    justify-content: center
+    !important;
+}
+
+li{
+    display: inline-block;
+    justify-content: center;
+    border: 3px solid rgb(63, 12, 63) !important;
+    margin: 10px 10px 10px 10px;
+    border-radius: 10px;
+}
+
+h5{
+    color: rgb(34, 10, 10);
+    
+    font-family: Arial, Helvetica, sans-serif;
+    display: flex;
+    justify-content: center;
+}
+

@@ -13,6 +13,7 @@
     "@pdftron/pdfjs-express": "^7.3.2",
     "@pdftron/pdfnet-node": "^9.0.0-2",
     "body-parser": "^1.19.0",
+    "convertapi": "^1.11.1",
     "easy-pdf-merge": "^0.2.6",
     "edge": "^7.10.1",
     "edge-py": "^0.1.0",
