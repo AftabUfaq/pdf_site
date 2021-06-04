@@ -1,5 +1,4 @@
 const express = require("express");
-
 const bodyParser = require("body-parser");
 
 const fs = require("fs");
@@ -16,6 +15,7 @@ var convertapi = require('convertapi')('yFG0IdFN6xoCsS9k');
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
+app.use(express.static('public'));
 
 
 const PORT = process.env.PORT || 5000;
@@ -57,6 +57,14 @@ app.get('/edit', (req, res) => {
 })
 
 const { PDFNet } = require('@pdftron/pdfnet-node');
+
+
+app.get('/', (req, res) => {
+    res.render('Home', { title: "Home" })
+})
+
+
+
 app.get('/imgtopdf', (req, res) => {
     res.render('imgtopdf', { title: "Convert JPG or PNG files to PDF" })
 })
@@ -100,8 +108,14 @@ app.get('/pdftodoc', (req, res) => {
 app.get('/pdftoxlsx', (req, res) => {
     res.render('pdftoexcel', { title: "Convert Office to PDF" })
 })
+app.get('/pdftoppt', (req, res) => {
+    res.render('pdftoppt', { title: "Convert Office to PDF" })
+})
 app.get('/unlockpdf', (req, res) => {
     res.render('unlockpdf', { title: "Remove password to PDF" })
+})
+app.get('/pdf-to-pdfa', (req, res) => {
+    res.render('pdfa', { title: "Remove password to PDF" })
 })
 
 app.get('/signpdf', (req, res) => {
@@ -197,6 +211,20 @@ const pdf_to_png = function (req, file, callback) {
     callback(null, true);
 };
 const pdftopng= multer({storage:storage,fileFilter:pdf_to_png})
+const {Powerpoint}=require('pdf-officegen')
+app.post('/pdftoppt', pdftopng.single('file'), (req, res) => {
+    outputFilePath = "public/uploads/" + "output"+ Date.now() +".pdf"
+    if (req.file)
+    {
+        console.log(req.file)
+        files=[]
+        files.push(req.file.path)
+        const p = new Powerpoint();
+        console.log(files)
+        p.convertFromPdf(files, (err, result) => {
+        })
+    }
+})
 app.post('/pdftopng',pdftopng.single('file'),(req,res) => {
     if(req.file){
       console.log(req.file.path)
