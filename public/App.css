@@ -19,18 +19,22 @@
 
 ul{
     display: flex;
-    justify-content: center;
+    justify-content: center
+    !important;
 }
 
 li{
     display: inline-block;
     justify-content: center;
-    border: 3px solid gold;
+    border: 3px solid rgb(63, 12, 63) !important;
     margin: 10px 10px 10px 10px;
     border-radius: 10px;
 }
 
 h5{
+    color: rgb(34, 10, 10);
+    
+    font-family: Arial, Helvetica, sans-serif;
     display: flex;
     justify-content: center;
 }
