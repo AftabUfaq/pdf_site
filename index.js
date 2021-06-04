@@ -16,6 +16,7 @@ var convertapi = require('convertapi')('yFG0IdFN6xoCsS9k');
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
+app.use(express.static('public'));
 
 
 const PORT = process.env.PORT || 5000;
@@ -53,6 +54,14 @@ app.get('/mergepdf', (req, res) => {
 })
 
 const { PDFNet } = require('@pdftron/pdfnet-node');
+
+
+app.get('/', (req, res) => {
+    res.render('Home', { title: "Home" })
+})
+
+
+
 app.get('/imgtopdf', (req, res) => {
     res.render('imgtopdf', { title: "Convert JPG or PNG files to PDF" })
 })
