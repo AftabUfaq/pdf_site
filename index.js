@@ -99,13 +99,13 @@ app.get('/protectpdf', (req, res) => {
     res.render('protectpdf', { title: "Convert Office to PDF" })
 })
 app.get('/pdftodoc', (req, res) => {
-    res.render('pdftoword', { title: "Convert Office to PDF" })
+    res.render('pdftodoc', { title: "Convert Office to PDF" })
+})
+app.get('/pptfrompdf', (req, res) => {
+    res.render('pdftoppt', { title: "Convert Office to PDF" })
 })
 app.get('/pdftoxlsx', (req, res) => {
-    res.render('pdftoexcel', { title: "Convert Office to PDF" })
-})
-app.get('/pdftoppt', (req, res) => {
-    res.render('pdftoppt', { title: "Convert Office to PDF" })
+    res.render('pdftoxlsx', { title: "Convert Office to PDF" })
 })
 app.get('/unlockpdf', (req, res) => {
     res.render('unlockpdf', { title: "Remove password to PDF" })
@@ -325,46 +325,22 @@ const compresspdf = function (req, file, callback) {
     callback(null, true);
 };
 const compress_pdf= multer({storage:storage,fileFilter:compresspdf})
-app.post('/pdftoxlsx',compress_pdf.single('file'),(req,res) => {
+app.post('/pdftodoc',compress_pdf.single('file'),(req,res) => {
     if(req.file)
     {
         inputFile=req.file.path;
-        outputFilePath = "public/uploads/" + Date.now() + "output.xlsx";
-        const reader = require('xlsx')
-        var pdf2table = require('pdf2table');
-        var fs = require('fs');
+        outputFilePath=inputFile.split(".")[0]+".docx"
         console.log(inputFile);
-        fs.readFile(inputFile, function (err, buffer) {
-        if (err) 
-            return console.log(err);
-        pdf2table.parse(buffer, function (err, rows, rowsdebug) 
-        {
-            if(err) 
-                return console.log(err);
-            console.log(rows);
-            var excel = require('excel4node');
-            var data='';
-            var workbook = new excel.Workbook();
-            var worksheet = workbook.addWorksheet('Sheet 1');
-            var style = workbook.createStyle({
-                font: {
-                  color: '#FF0800',
-                  size: 12
-                },
-                numberFormat: '$#,##0.00; ($#,##0.00); -'
-              });
-            var writeStream = fs.createWriteStream(outputFilePath);
-            writeStream.close();
-            for (var i = 0; i < rows.length; i++) 
-            {
-                for (var j=0; j<rows[i].length;j++)
-                {
-                    worksheet.cell(i+1,j+1).string(rows[i][j]).style(style);
-                }
-            }
-            workbook.write(outputFilePath);
-            console.log(data);
-            res.download(outputFilePath,(err) => 
+        exec(
+            `libreoffice --headless --convert-to docx:"writer_pdf_Export:ReduceImageResolution=True;MaxImageResolution=75;Quality=50" ${inputFile} --outdir ~/pdf_site/public/uploads/`,
+            (err, stdout, stderr) => {
+              if (err) 
+              {
+                console.log(err);
+                res.send("Some error in compressing");
+                return;
+              }
+              res.download(outputFilePath,(err) => 
                 {
                     if(err)
                     {
@@ -375,9 +351,68 @@ app.post('/pdftoxlsx',compress_pdf.single('file'),(req,res) => {
                     fs.unlinkSync(req.file.path)
                     fs.unlinkSync(outputFilePath)
                 })
-            
-        });
-        });
+            }
+          );
+    }
+})
+app.post('/pdftoxlsx',compress_pdf.single('file'),(req,res) => {
+    if(req.file)
+    {
+        inputFile=req.file.path;
+        outputFilePath=inputFile.split(".")[0]+".xlsx"
+        console.log(inputFile);
+        exec(
+            `libreoffice --headless --convert-to xlsx:"writer_pdf_Export:ReduceImageResolution=True;MaxImageResolution=75;Quality=50" ${inputFile} --outdir ~/pdf_site/public/uploads/`,
+            (err, stdout, stderr) => {
+              if (err) 
+              {
+                console.log(err);
+                res.send("Some error in compressing");
+                return;
+              }
+              res.download(outputFilePath,(err) => 
+                {
+                    if(err)
+                    {
+                        console.log(err);
+                        res.send("some error taken place in downloading the file")
+                        return
+                    }
+                    fs.unlinkSync(req.file.path)
+                    fs.unlinkSync(outputFilePath)
+                })
+            }
+          );
+    }
+})
+app.post('/pptfrompdf',compress_pdf.single('file'),(req,res) => {
+    if(req.file)
+    {
+        inputFile=req.file.path;
+        outputFilePath=inputFile.split(".")[0]+".pptx"
+        console.log(inputFile);
+        exec(
+            `libreoffice --headless --convert-to pptx:"writer_pdf_Export:ReduceImageResolution=True;MaxImageResolution=75;Quality=50" ${inputFile} --outdir ~/pdf_site/public/uploads/`,
+            (err, stdout, stderr) => {
+              if (err) 
+              {
+                console.log(err);
+                res.send("Some error in compressing");
+                return;
+              }
+              res.download(outputFilePath,(err) => 
+                {
+                    if(err)
+                    {
+                        console.log(err);
+                        res.send("some error taken place in downloading the file")
+                        return
+                    }
+                    fs.unlinkSync(req.file.path)
+                    fs.unlinkSync(outputFilePath)
+                })
+            }
+          );
     }
 })
 app.post('/compresspdf',compress_pdf.single('file'),(req,res) => {
