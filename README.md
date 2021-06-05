@@ -16,3 +16,7 @@
 12. doc to pdf
 13. ppt to pdf
 14. excel to pdf
+15. sign pdf
+16. pdf to docx
+17. pdf to xlsx
+18. pdf to pptx
