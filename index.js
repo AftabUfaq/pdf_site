@@ -52,6 +52,10 @@ app.get('/mergepdf', (req, res) => {
     res.render('mergepdf', { title: "Concatenate or Merge Multiple PDF Files Online - Free Media Tools" })
 })
 
+app.get('/edit', (req, res) => {
+    res.render('edit', { title: "Concatenate or Merge Multiple PDF Files Online - Free Media Tools" })
+})
+
 const { PDFNet } = require('@pdftron/pdfnet-node');
 
 
@@ -114,6 +118,10 @@ app.get('/pdf-to-pdfa', (req, res) => {
     res.render('pdfa', { title: "Remove password to PDF" })
 })
 
+app.get('/signpdf', (req, res) => {
+    res.render('signpdf', { title: "Remove password to PDF" })
+})
+
 app.get('/pdf-to-pdfa', (req, res) => {
     convertapi.convert('pdfa', {
         File: 'public/uploads/int.pdf'
@@ -121,6 +129,8 @@ app.get('/pdf-to-pdfa', (req, res) => {
         result.saveFiles('public/uploads/output_file.pdfa');
     });
 })
+
+
 
 
 app.post('/mergepdf', multer({ storage: storage }).array('files', 100), (req, res) => {
