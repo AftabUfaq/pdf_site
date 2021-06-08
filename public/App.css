@@ -52,3 +52,18 @@ h5{
     justify-content: center;
 }
 
+
+@media(max-width: 1200px){
+    ul{
+        display: block;
+        justify-content: center;
+    }
+    
+    li{
+        display: block;
+        justify-content: center;
+        border: 3px solid rgb(63, 12, 63);
+        margin: 4px;
+        border-radius: 10px;
+    }
+  }

@@ -56,7 +56,7 @@ app.get('/edit', (req, res) => {
     res.render('edit', { title: "Concatenate or Merge Multiple PDF Files Online - Free Media Tools" })
 })
 
-const { PDFNet } = require('@pdftron/pdfnet-node');
+//const { PDFNet } = require('@pdftron/pdfnet-node');
 
 
 app.get('/', (req, res) => {
