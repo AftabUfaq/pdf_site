@@ -20,6 +20,17 @@ app.use(express.static('public'));
 const mergepdfRouter=require("./Routers/mergePdfRouter.js");
 app.use("/",mergepdfRouter);
 
+const pdftodoc=require("./Routers/pdftodoc.js");
+app.use("/",pdftodoc);
+
+const pdftoxlsx=require("./Routers/pdftoxlsx.js");
+app.use("/",pdftoxlsx);
+
+const pdftoppt=require("./Routers/pdftoppt.js");
+app.use("/",pdftoppt);
+
+const compress=require("./Routers/compress.js");
+app.use("/",compress);
 
 const PORT = process.env.PORT || 5000;
 
@@ -91,24 +102,14 @@ app.get('/reversepdf', (req, res) => {
 app.get('/splitpdf', (req, res) => {
     res.render('splitpdf', { title: "Split PDF" })
 })
-app.get('/compresspdf',(req,res) => {
-    res.render('compresspdf',{title:"DOCX to PDF Converter - Free Media Tools"})
-})
+
 app.get('/officetopdf', (req, res) => {
     res.render('officetopdf', { title: "Convert Office to PDF" })
 })
 app.get('/protectpdf', (req, res) => {
     res.render('protectpdf', { title: "Convert Office to PDF" })
 })
-app.get('/pdftodoc', (req, res) => {
-    res.render('pdftodoc', { title: "Convert Office to PDF" })
-})
-app.get('/pptfrompdf', (req, res) => {
-    res.render('pdftoppt', { title: "Convert Office to PDF" })
-})
-app.get('/pdftoxlsx', (req, res) => {
-    res.render('pdftoxlsx', { title: "Convert Office to PDF" })
-})
+
 app.get('/unlockpdf', (req, res) => {
     res.render('unlockpdf', { title: "Remove password to PDF" })
 })
@@ -300,125 +301,8 @@ const compresspdf = function (req, file, callback) {
     callback(null, true);
 };
 const compress_pdf= multer({storage:storage,fileFilter:compresspdf})
-app.post('/pdftodoc',compress_pdf.single('file'),(req,res) => {
-    if(req.file)
-    {
-        inputFile=req.file.path;
-        outputFilePath=inputFile.split(".")[0]+".docx"
-        console.log(inputFile);
-        exec(
-            `libreoffice --headless --convert-to docx:"writer_pdf_Export:ReduceImageResolution=True;MaxImageResolution=75;Quality=50" ${inputFile} --outdir ~/pdf_site/public/uploads/`,
-            (err, stdout, stderr) => {
-              if (err) 
-              {
-                console.log(err);
-                res.send("Some error in compressing");
-                return;
-              }
-              res.download(outputFilePath,(err) => 
-                {
-                    if(err)
-                    {
-                        console.log(err);
-                        res.send("some error taken place in downloading the file")
-                        return
-                    }
-                    fs.unlinkSync(req.file.path)
-                    fs.unlinkSync(outputFilePath)
-                })
-            }
-          );
-    }
-})
-app.post('/pdftoxlsx',compress_pdf.single('file'),(req,res) => {
-    if(req.file)
-    {
-        inputFile=req.file.path;
-        outputFilePath=inputFile.split(".")[0]+".xlsx"
-        console.log(inputFile);
-        exec(
-            `libreoffice --headless --convert-to xlsx:"writer_pdf_Export:ReduceImageResolution=True;MaxImageResolution=75;Quality=50" ${inputFile} --outdir ~/pdf_site/public/uploads/`,
-            (err, stdout, stderr) => {
-              if (err) 
-              {
-                console.log(err);
-                res.send("Some error in compressing");
-                return;
-              }
-              res.download(outputFilePath,(err) => 
-                {
-                    if(err)
-                    {
-                        console.log(err);
-                        res.send("some error taken place in downloading the file")
-                        return
-                    }
-                    fs.unlinkSync(req.file.path)
-                    fs.unlinkSync(outputFilePath)
-                })
-            }
-          );
-    }
-})
-app.post('/pptfrompdf',compress_pdf.single('file'),(req,res) => {
-    if(req.file)
-    {
-        inputFile=req.file.path;
-        outputFilePath=inputFile.split(".")[0]+".pptx"
-        console.log(inputFile);
-        exec(
-            `libreoffice --headless --convert-to pptx:"writer_pdf_Export:ReduceImageResolution=True;MaxImageResolution=75;Quality=50" ${inputFile} --outdir ~/pdf_site/public/uploads/`,
-            (err, stdout, stderr) => {
-              if (err) 
-              {
-                console.log(err);
-                res.send("Some error in compressing");
-                return;
-              }
-              res.download(outputFilePath,(err) => 
-                {
-                    if(err)
-                    {
-                        console.log(err);
-                        res.send("some error taken place in downloading the file")
-                        return
-                    }
-                    fs.unlinkSync(req.file.path)
-                    fs.unlinkSync(outputFilePath)
-                })
-            }
-          );
-    }
-})
-app.post('/compresspdf',compress_pdf.single('file'),(req,res) => {
-    if(req.file)
-    {
-        inputFile=req.file.path;
-        outputFilePath = "public/uploads/" + Date.now() + "output.pdf";
-        exec(
-            `gs \ -q -dNOPAUSE -dBATCH -dSAFER \ -sDEVICE=pdfwrite \ -dCompatibilityLevel=1.3 \ -dPDFSETTINGS=/ebook \ -dEmbedAllFonts=true \ -dSubsetFonts=true \ -dAutoRotatePages=/None \ -dColorImageDownsampleType=/Bicubic \ -dColorImageResolution=72 \ -dGrayImageDownsampleType=/Bicubic \ -dGrayImageResolution=72 \ -dMonoImageDownsampleType=/Subsample \ -dMonoImageResolution=72 \ -sOutputFile=${outputFilePath} \ ${inputFile}`,
-            (err, stdout, stderr) => {
-              if (err) 
-              {
-                console.log(err);
-                res.send("Some error in compressing");
-                return;
-              }
-              res.download(outputFilePath,(err) => 
-                {
-                    if(err)
-                    {
-                        console.log(err);
-                        res.send("some error taken place in downloading the file")
-                        return
-                    }
-                    fs.unlinkSync(req.file.path)
-                    fs.unlinkSync(outputFilePath)
-                })
-            }
-          );
-    }
-})
+
+
 const {PDFDocument,StandardFonts,degrees,rgb}=require('pdf-lib')
 const watermark_pdf= multer({storage:storage,fileFilter:compresspdf})
 app.post('/watermark',watermark_pdf.single('file'),(req,res) => {
