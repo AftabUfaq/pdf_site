@@ -29,6 +29,18 @@ app.use("/",pdftoxlsx);
 const pdftoppt=require("./Routers/pdftoppt.js");
 app.use("/",pdftoppt);
 
+const imgpdfRouter=require("./Routers/imageToPdfRouter.js");
+app.use("/",imgpdfRouter);
+
+const htmlToPdfRouter=require("./Routers/htmlToPdfRouter.js");
+app.use("/",htmlToPdfRouter);
+
+const unlockPdfRouter=require("./Routers/unlockPdfRouter.js");
+app.use("/",unlockPdfRouter);
+
+const lockPdfRouter=require("./Routers/lockPdfRouter.js");
+app.use("/",lockPdfRouter);
+
 const compress=require("./Routers/compress.js");
 app.use("/",compress);
 
@@ -60,7 +72,6 @@ const imageFilter = function (req, file, cb) {
     }
 };
 
-var upload = multer({ storage: storage, fileFilter: imageFilter });
 
 app.get('/edit', (req, res) => {
     res.render('edit', { title: "Concatenate or Merge Multiple PDF Files Online - Free Media Tools" })
@@ -74,16 +85,8 @@ app.get('/', (req, res) => {
 })
 
 
-app.get('/imgtopdf', (req, res) => {
-    res.render('imgtopdf', { title: "Convert JPG or PNG files to PDF" })
-})
-
 app.get('/pdftopng',(req,res) => {
     res.render('pdf_to_png',{title:"DOCX to PDF Converter - Free Media Tools"})
-})
-
-app.get('/htmltopdf', (req, res) => {
-    res.render('htmltopdf', { title: "Convert HTML to PDF" })
 })
 app.get('/watermark', (req, res) => {
     res.render('watermark', { title: "Reverse PDF" })
@@ -106,13 +109,7 @@ app.get('/splitpdf', (req, res) => {
 app.get('/officetopdf', (req, res) => {
     res.render('officetopdf', { title: "Convert Office to PDF" })
 })
-app.get('/protectpdf', (req, res) => {
-    res.render('protectpdf', { title: "Convert Office to PDF" })
-})
 
-app.get('/unlockpdf', (req, res) => {
-    res.render('unlockpdf', { title: "Remove password to PDF" })
-})
 app.get('/pdf-to-pdfa', (req, res) => {
     res.render('pdfa', { title: "Remove password to PDF" })
 })
@@ -130,44 +127,6 @@ app.get('/pdf-to-pdfa', (req, res) => {
 })
 
 
-
-app.post('/unlockpdf', multer({ storage: storage }).array('files', 1), (req, res) => {
-    console.log(req.files[0].path);
-    outputFilePath = "public/uploads/" + "output"+ Date.now() +".pdf"
-    const rpp = require('remove-pdf-password');
-    if (req.files) {
-        console.log(req.files[0].path)
-
-        var pass = req.body.text;
-        const params = {
-            inputFilePath: req.files[0].path,
-            password: pass,
-            outputFilePath: outputFilePath,
-        }
-        rpp(params)
-        console.log(outputFilePath)
-            const fs = require("fs");
-            setTimeout(() => {
-                
-                    if (fs.existsSync(outputFilePath)) 
-                    {
-                        console.log("hbhjbh")
-                        res.download(outputFilePath,(err) => 
-                        {
-                            if(err)
-                            {
-                                console.log(err);
-                                res.send("some error taken place in downloading the file")
-                                return
-                            }
-                            //fs.unlinkSync(req.file.path)
-                            fs.unlinkSync(outputFilePath)
-                    })
-                }
-                
-            }, 1000)
-    }
-})
 const pdf_to_png = function (req, file, callback) {
     var ext = path.extname(file.originalname);
     if (ext !== ".pdf")
@@ -220,78 +179,7 @@ app.post('/pdftopng',pdftopng.single('file'),(req,res) => {
     }
 })
 
-app.post('/imgtopdf', upload.array('files', 100), (req, res) => {
-    console.log(req.files);
-    var list = ""
-    outputFilePath = "public/uploads/" + Date.now() + "output.pdf"
-    if (req.files) {
-        req.files.forEach(file => {
-            console.log(file.path)
-            list+= `${file.path}`
-            list+=" "
-        });
 
-        exec(`magick convert ${list} ${outputFilePath}`, (err,stdout,stderr) => {
-            if (err){
-                //fs.unlinkSync(req.file.path)
-                req.files.forEach((file) => {
-                    //fs.unlinkSync(file.path);
-                });
-                //fs.unlinkSync(outputFilePath)
-                console.log(err)
-        
-                res.send("some error taken place in conversion process")
-                return
-            }
-
-            res.download(outputFilePath,(err) => {
-                if (err){
-                    //fs.unlinkSync(req.file.path)
-                    req.files.forEach((file) => {
-                        //fs.unlinkSync(file.path);
-                    });
-                    //fs.unlinkSync(outputFilePath)
-                    console.log(err)
-                    res.send("some error taken place in conversion process")
-                    return
-                }
-                
-                req.files.forEach((file) => {
-                //fs.unlinkSync(file.path);
-                });
-
-                //fs.unlinkSync(outputFilePath);
-            })
-        })
-        
-    }
-})
-
-app.post('/htmltopdf',multer({ storage: storage }).array('address', 1),(req,res)=>{
-    console.log(req.body.address);
-    outputFilePath = "public/uploads/" + Date.now() + "output.pdf";
-    (async () => {
-        const browser = await puppeteer.launch();
-        const page = await browser.newPage();
-        await page.goto(`${req.body.address}`, {
-          waitUntil: 'networkidle2',
-        });
-        await page.pdf({ path: `${outputFilePath}`, format: 'a4' });
-        res.download(outputFilePath,(err) => {
-            if (err){
-                fs.unlinkSync(req.file.path)
-                fs.unlinkSync(outputFilePath)
-                console.log(err)
-                res.send("some error taken place in conversion process")
-            }
-            
-            fs.unlinkSync(req.file.path);
-
-            fs.unlinkSync(outputFilePath);
-        })
-        await browser.close();
-    })();
-})
 const compresspdf = function (req, file, callback) {
     var ext = path.extname(file.originalname);
     if (ext !== ".pdf")
@@ -342,36 +230,7 @@ app.post('/watermark',watermark_pdf.single('file'),(req,res) => {
         }
     }
 })
-const protect_pdf= multer({storage:storage,fileFilter:compresspdf})
-app.post('/protectpdf',protect_pdf.single('file'),(req,res) => {
-    if(req.file)
-    {
-        inputFile=req.file.path;
-        outputFilePath = "public/uploads/" + Date.now() + "output.pdf";
-        exec(
-            `qpdf --encrypt ${req.body.text} ${req.body.text} 40 -- ${inputFile} ${outputFilePath}`,
-            (err, stdout, stderr) => {
-              if (err) 
-              {
-                console.log(err);
-                res.send("Some error in compressing");
-                return;
-              }
-              res.download(outputFilePath,(err) => 
-                {
-                    if(err)
-                    {
-                        console.log(err);
-                        res.send("some error taken place in downloading the file")
-                        return
-                    }
-                    fs.unlinkSync(req.file.path)
-                    fs.unlinkSync(outputFilePath)
-                })
-            }
-          );
-    }
-})
+
 
 const imagewater = (req, file, cb) => {
     if (file.fieldname === "file") { // if uploading resume
