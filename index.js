@@ -17,6 +17,9 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use(express.static('public'));
 
+const mergepdfRouter=require("./Routers/mergePdfRouter.js");
+app.use("/",mergepdfRouter);
+
 
 const PORT = process.env.PORT || 5000;
 
@@ -48,10 +51,6 @@ const imageFilter = function (req, file, cb) {
 
 var upload = multer({ storage: storage, fileFilter: imageFilter });
 
-app.get('/mergepdf', (req, res) => {
-    res.render('mergepdf', { title: "Concatenate or Merge Multiple PDF Files Online - Free Media Tools" })
-})
-
 app.get('/edit', (req, res) => {
     res.render('edit', { title: "Concatenate or Merge Multiple PDF Files Online - Free Media Tools" })
 })
@@ -62,7 +61,6 @@ app.get('/edit', (req, res) => {
 app.get('/', (req, res) => {
     res.render('Home', { title: "Home" })
 })
-
 
 
 app.get('/imgtopdf', (req, res) => {
@@ -131,39 +129,6 @@ app.get('/pdf-to-pdfa', (req, res) => {
 })
 
 
-
-
-app.post('/mergepdf', multer({ storage: storage }).array('files', 100), (req, res) => {
-    console.log(req.files);
-    const files = []
-    outputFilePath = "public/uploads/" + Date.now() + "output.pdf"
-    if (req.files) {
-        req.files.forEach(file => {
-            console.log(file.path)
-            files.push(file.path)
-        });
-
-        pdfMerge(files, outputFilePath, (err) => {
-            if (err) res.send(err);
-            res.download(outputFilePath, (err) => {
-                if (err) {
-                    files.forEach(file => {
-                        console.log(file.split('\\')[1]);
-                        fs.unlinkSync(file);
-                    })
-                    res.send("Some error takes place in downloading the file")
-
-                }
-                fs.unlinkSync(outputFilePath)
-                files.forEach(file => {
-                    console.log(file.split('\\')[1]);
-                    fs.unlinkSync(file);
-                })
-            })
-
-        })
-    }
-})
 
 app.post('/unlockpdf', multer({ storage: storage }).array('files', 1), (req, res) => {
     console.log(req.files[0].path);
