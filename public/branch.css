@@ -1,0 +1,15 @@
+.container{
+    max-width: 50%;
+    align-items: center;
+}
+
+.btn{
+    
+    align-self:center;
+    
+}
+
+.btn:hover{
+    color:blue;
+    background-color: white;
+}

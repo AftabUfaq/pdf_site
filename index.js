@@ -7,18 +7,18 @@ const path = require('path');
 
 const pdfMerge = require('easy-pdf-merge');
 const {exec} = require('child_process');
-const puppeteer = require('puppeteer-core');
+//const puppeteer = require('puppeteer-core');
 //const libre = require('libreoffice-convert');
 const scissors = require('scissors');
 const app = express();
-var convertapi = require('convertapi')('yFG0IdFN6xoCsS9k');
+//var convertapi = require('convertapi')('yFG0IdFN6xoCsS9k');
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use(express.static('public'));
 
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 3000;
 
 app.set("view engine", "ejs");
 app.use(express.static("public"));
@@ -56,7 +56,7 @@ app.get('/edit', (req, res) => {
     res.render('edit', { title: "Concatenate or Merge Multiple PDF Files Online - Free Media Tools" })
 })
 
-const { PDFNet } = require('@pdftron/pdfnet-node');
+//const { PDFNet } = require('@pdftron/pdfnet-node');
 
 
 app.get('/', (req, res) => {
@@ -211,7 +211,7 @@ const pdf_to_png = function (req, file, callback) {
     callback(null, true);
 };
 const pdftopng= multer({storage:storage,fileFilter:pdf_to_png})
-const {Powerpoint}=require('pdf-officegen')
+//const {Powerpoint}=require('pdf-officegen')
 app.post('/pdftoppt', pdftopng.single('file'), (req, res) => {
     outputFilePath = "public/uploads/" + "output"+ Date.now() +".pdf"
     if (req.file)
@@ -454,7 +454,7 @@ app.post('/compresspdf',compress_pdf.single('file'),(req,res) => {
           );
     }
 })
-const {PDFDocument,StandardFonts,degrees,rgb}=require('pdf-lib')
+//const {PDFDocument,StandardFonts,degrees,rgb}=require('pdf-lib')
 const watermark_pdf= multer({storage:storage,fileFilter:compresspdf})
 app.post('/watermark',watermark_pdf.single('file'),(req,res) => {
     if(req.file)
