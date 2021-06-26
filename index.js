@@ -17,6 +17,9 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use(express.static('public'));
 
+const mergepdfRouter=require("./Routers/mergePdfRouter.js");
+app.use("/",mergepdfRouter);
+
 
 const PORT = process.env.PORT || 3000;
 
@@ -48,10 +51,6 @@ const imageFilter = function (req, file, cb) {
 
 var upload = multer({ storage: storage, fileFilter: imageFilter });
 
-app.get('/mergepdf', (req, res) => {
-    res.render('mergepdf', { title: "Concatenate or Merge Multiple PDF Files Online - Free Media Tools" })
-})
-
 app.get('/edit', (req, res) => {
     res.render('edit', { title: "Concatenate or Merge Multiple PDF Files Online - Free Media Tools" })
 })
@@ -62,7 +61,6 @@ app.get('/edit', (req, res) => {
 app.get('/', (req, res) => {
     res.render('Home', { title: "Home" })
 })
-
 
 
 app.get('/imgtopdf', (req, res) => {
@@ -131,39 +129,6 @@ app.get('/pdf-to-pdfa', (req, res) => {
 })
 
 
-
-
-app.post('/mergepdf', multer({ storage: storage }).array('files', 100), (req, res) => {
-    console.log(req.files);
-    const files = []
-    outputFilePath = "public/uploads/" + Date.now() + "output.pdf"
-    if (req.files) {
-        req.files.forEach(file => {
-            console.log(file.path)
-            files.push(file.path)
-        });
-
-        pdfMerge(files, outputFilePath, (err) => {
-            if (err) res.send(err);
-            res.download(outputFilePath, (err) => {
-                if (err) {
-                    files.forEach(file => {
-                        console.log(file.split('\\')[1]);
-                        fs.unlinkSync(file);
-                    })
-                    res.send("Some error takes place in downloading the file")
-
-                }
-                fs.unlinkSync(outputFilePath)
-                files.forEach(file => {
-                    console.log(file.split('\\')[1]);
-                    fs.unlinkSync(file);
-                })
-            })
-
-        })
-    }
-})
 
 app.post('/unlockpdf', multer({ storage: storage }).array('files', 1), (req, res) => {
     console.log(req.files[0].path);
@@ -700,40 +665,42 @@ app.post('/splitpdf', multer({ storage: storage }).fields([{
    });
     }
 })
-app.post('/officetopdf', multer({ storage: storage }).array('file', 1), (req, res) => {
+const compresspdf1 = function (req, file, callback) {
+    var ext = path.extname(file.originalname);
+    callback(null, true);
+};
+const compress_pdf1= multer({storage:storage,fileFilter:compresspdf1})
+app.post('/officetopdf', compress_pdf1.single('file'),(req,res) => {
     
-    console.log(req.files[0].path);
-    
-    const files = []
-    outputFilePath = "public/uploads/" + Date.now() + "output.pdf"
-
-    const convertToPDF = async () => {
-        const pdfDoc = await PDFNet.PDFDoc.create()
-        await pdfDoc.initSecurityHandler()
-        await PDFNet.Convert.toPdf(pdfDoc, req.files[0].path)
-        pdfDoc.save(outputFilePath, PDFNet.SDFDoc.SaveOptions.e_linearized)
-        
-         
-    }
-
-    
-    PDFNet.runWithCleanup(convertToPDF).then(()=>{
-        res.download(outputFilePath,(err) => {
-            if (err){
-                fs.unlinkSync(req.files[0].path)
-                fs.unlinkSync(outputFilePath)
-                console.log(err)
-                res.send("some error taken place in conversion process")
+    if(req.file)
+    {
+        console.log(req.file);
+        inputFile=req.file.path;
+        outputFilePath=inputFile.split(".")[0]+".pdf"
+        console.log(inputFile);
+        exec(
+            `libreoffice --headless --convert-to pdf:"writer_pdf_Export:ReduceImageResolution=True;MaxImageResolution=75;Quality=50" ${inputFile} --outdir ~/pdf_site/public/uploads/`,
+            (err, stdout, stderr) => {
+              if (err) 
+              {
+                console.log(err);
+                res.send("Some error in compressing");
+                return;
+              }
+              res.download(outputFilePath,(err) => 
+                {
+                    if(err)
+                    {
+                        console.log(err);
+                        res.send("some error taken place in downloading the file")
+                        return
+                    }
+                    fs.unlinkSync(req.file.path)
+                    fs.unlinkSync(outputFilePath)
+                })
             }
-            
-            fs.unlinkSync(req.file[0].path);
-
-            fs.unlinkSync(outputFilePath);
-        })
-    }).catch(err => {
-        res.statusCode = 500
-        console.log(err)
-    })
+          );
+    }
 })
 app.listen(PORT, () => {
     console.log(`The Server has started at port ${PORT}`);
