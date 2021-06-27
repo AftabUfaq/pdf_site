@@ -2,7 +2,7 @@ const express=require("express");
 const router=express.Router();
 var multer = require('multer')
 const storage=require("../Multer/Multer")
-const PdfController=require("../Controlers/imageToPdfController")
+const PdfController=require("../Controlers/htmlToPdfController")
 
 router.get('/htmltopdf', (req, res) => {
     res.render('htmltopdf', { title: "Convert HTML to PDF" })

@@ -8,7 +8,7 @@ const {exec} = require('child_process');
 const scissors = require('scissors');
 const app = express();
 const storage=require("./Multer/lockPdfMulter")
-
+var convertapi = require('convertapi')('yFG0IdFN6xoCsS9k');
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use(express.static('public'));
@@ -57,6 +57,7 @@ app.use("/",splitpdfRouter);
 
 const waterMarkRouter=require("./Routers/waterMarkRouter.js");
 app.use("/",waterMarkRouter);
+
 const ImageWaterMarkRouter=require("./Routers/imageWaterMarkRouter.js");
 app.use("/",ImageWaterMarkRouter);
 
@@ -72,15 +73,30 @@ app.use(express.static("public"))
 app.get('/', (req, res) => {
     res.render('Home', { title: "Home" })
 })
+
 app.get('/pdf-to-pdfa', (req, res) => {
     res.render('pdfa', { title: "Remove password to PDF" })
 })
-app.get('/pdf-to-pdfa', (req, res) => {
-    convertapi.convert('pdfa', {
-        File: 'public/uploads/int.pdf'
-    }, 'pdf').then(function(result) {
-        result.saveFiles('public/uploads/output_file.pdfa');
-    });
+app.post('/pdf-to-pdfa', multer({ storage: storage }).single('file'), (req, res) => {
+    outputFilePath = "public/uploads/" + Date.now() + "output.pdf"
+    if (req.file) {
+
+        convertapi.convert('pdfa', {
+            File: req.file.path,
+        }, 'pdf').then(function (result) {
+            result.saveFiles(outputFilePath);
+        }).then(() => {
+            res.download(outputFilePath, (err) => {
+                if (err) {
+                    fs.unlinkSync(file);
+                    res.send("Some error takes place in downloading the file")
+
+                }
+                fs.unlinkSync(outputFilePath)
+                fs.unlinkSync(req.file.path);
+            })
+        })
+    }
 })
 
 

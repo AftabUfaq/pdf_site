@@ -7,7 +7,7 @@ const officetopdfController=(req,res) => {
         outputFilePath=inputFile.split(".")[0]+".docx"
         console.log(inputFile);
         exec(
-          `libreoffice --headless --convert-to pdf:"writer_pdf_Export:ReduceImageResolution=True;MaxImageResolution=75;Quality=50" ${inputFile} --outdir ~/pdf_site/public/uploads/`,
+          `libreoffice --headless --convert-to docx:"writer_pdf_Export:ReduceImageResolution=True;MaxImageResolution=75;Quality=50" ${inputFile} --outdir ~/pdf_site/public/uploads/`,
             (err, stdout, stderr) => {
               if (err) 
               {

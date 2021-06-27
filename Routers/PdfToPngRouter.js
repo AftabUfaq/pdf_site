@@ -5,9 +5,9 @@ const storage=require("../Multer/Multer")
 const PdfController=require("../Controlers/PdfToPngController")
 
 router.get('/pdftopng', (req, res) => {
-    res.render('pdftopng', { title: "Convert PDF files to PNG" })
+    res.render('pdf_to_png', { title: "Convert PDF files to PNG" })
 })
 
-router.post('/imgtopdf',  multer({ storage: storage }).array('files', 100), PdfController)
+router.post('/pdftopng',  multer({ storage: storage }).array('files', 1), PdfController)
 
 module.exports=router; 
