@@ -44,8 +44,11 @@ app.use("/",lockPdfRouter);
 const compress=require("./Routers/compress.js");
 app.use("/",compress);
 
-const officetopdf=require('./Routers/OfficetoPdfRouter.js')
+const officetopdf=require('./Routers/OfficetoPdfRouter.js');
 app.use("/",officetopdf);
+
+const pdftopng=require('./Routers/PdfToPngRouter.js');
+app.use("/",pdftopng);
 
 const PORT = process.env.PORT || 5000;
 
