@@ -1,13 +1,13 @@
 const {exec} = require('child_process');
 const fs = require("fs");
-const officetopdfController=(req,res) => {
+const pdftodocController=(req,res) => {
     if(req.file)
     {
         inputFile=req.file.path;
         outputFilePath=inputFile.split(".")[0]+".docx"
         console.log(inputFile);
         exec(
-          `libreoffice --headless --convert-to pdf:"writer_pdf_Export:ReduceImageResolution=True;MaxImageResolution=75;Quality=50" ${inputFile} --outdir ~/pdf_site/public/uploads/`,
+            `libreoffice --headless --convert-to docx:"writer_pdf_Export:ReduceImageResolution=True;MaxImageResolution=75;Quality=50" ${inputFile} --outdir ~/pdf_site/public/uploads/`,
             (err, stdout, stderr) => {
               if (err) 
               {
@@ -31,4 +31,4 @@ const officetopdfController=(req,res) => {
     }
 }
 
-module.exports=officetopdfController;
+module.exports=pdftodocController;

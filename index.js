@@ -44,6 +44,9 @@ app.use("/",lockPdfRouter);
 const compress=require("./Routers/compress.js");
 app.use("/",compress);
 
+const officetopdf=require('./Routers/OfficetoPdfRouter.js')
+app.use("/",officetopdf);
+
 const PORT = process.env.PORT || 5000;
 
 app.set("view engine", "ejs");
