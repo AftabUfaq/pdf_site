@@ -1,6 +1,7 @@
 const express=require("express");
 const router=express.Router();
 var multer = require('multer')
+const storage=require("../Multer/Multer")
 const PdfController=require("../Controlers/unlockPdfController")
 
 router.get('/unlockpdf', (req, res) => {
