@@ -20,6 +20,15 @@ app.use(express.static('public'));
 const mergepdfRouter=require("./Routers/mergePdfRouter.js");
 app.use("/",mergepdfRouter);
 
+const rotatepdfRouter=require("./Routers/rotatePdfRouter.js");
+app.use("/",rotatepdfRouter);
+
+const reversepdfRouter=require("./Routers/reversePdfRouter.js");
+app.use("/",reversepdfRouter);
+
+const splitpdfRouter=require("./Routers/splitPdfRouter.js");
+app.use("/",splitpdfRouter);
+
 
 const PORT = process.env.PORT || 3000;
 
@@ -80,17 +89,8 @@ app.get('/watermark', (req, res) => {
 app.get('/imagewatermark', (req, res) => {
     res.render('imagewatermark', { title: "Reverse PDF" })
 })
-app.get('/rotatepdf', (req, res) => {
-    res.render('rotatepdf', { title: "Rotate PDF" })
-  })
 
-app.get('/reversepdf', (req, res) => {
-    res.render('reversepdf', { title: "Reverse PDF" })
-  })
 
-app.get('/splitpdf', (req, res) => {
-    res.render('splitpdf', { title: "Split PDF" })
-})
 app.get('/compresspdf',(req,res) => {
     res.render('compresspdf',{title:"DOCX to PDF Converter - Free Media Tools"})
 })
@@ -550,121 +550,8 @@ app.post('/imagewatermark',multer({storage:storage}).fields([{name: 'file'},{nam
         
     }
 })
-app.post('/rotatepdf', multer({ storage: storage }).array('files', 1), (req, res) => {
-    console.log(req.files);
-    const files = []
-    if (req.files) {
-        req.files.forEach(file => {
-            console.log(file.path)
-            files.push(file.path)
-        });
-    //const file = fs.readFileSync(files[0])
-    var rotated = scissors(files[0]).rotate(90)
-    rotated.pdfStream()
-   .pipe(fs.createWriteStream('out.pdf'))
-   .on('finish', function(){
-     console.log("We're done!");
-        //outputFilePath = "./uploads/" + Date.now() + "out.pdf"
-            res.download("out.pdf", (err) => {
-                if (err) {
-                    files.forEach(file => {
-                        console.log(file.split('\\')[1]);
-                        fs.unlinkSync(file);
-                    })
-                    res.send("Some error takes place in downloading the file")
 
-                }
-                fs.unlinkSync("out.pdf")
-                files.forEach(file => {
-                    console.log(file.split('\\')[1]);
-                    fs.unlinkSync(file);
-            })
 
-        })
-   }).on('error',function(err){
-     throw err;
-   });
-
-    
-     }
-})
-
-app.post('/reversepdf', multer({ storage: storage }).array('files', 1), (req, res) => {
-    console.log(req.files);
-    const files = []
-    if (req.files) {
-        req.files.forEach(file => {
-            console.log(file.path)
-            files.push(file.path)
-        });
-    var reverse = scissors(files[0]).reverse()
-    reverse.pdfStream()
-   .pipe(fs.createWriteStream('out.pdf'))
-   .on('finish', function(){
-     console.log("We're done!");
-        res.download("out.pdf", (err) => {
-                if (err) {
-                    files.forEach(file => {
-                        console.log(file.split('\\')[1]);
-                        fs.unlinkSync(file);
-                    })
-                    res.send("Some error takes place in downloading the file")
-
-                }
-                fs.unlinkSync("out.pdf")
-                files.forEach(file => {
-                    console.log(file.split('\\')[1]);
-                    fs.unlinkSync(file);
-            })
-
-        })
-   }).on('error',function(err){
-     throw err;
-   });
-
-    
-   }
-})
-app.post('/splitpdf', multer({ storage: storage }).fields([{
-    name: 'files', maxCount: 1
-  },{
-    name: 'pagestart', maxCount: 1
-  }, {
-    name: 'pageend', maxCount: 1
-  }]), (req, res) => {
-     var srt=req.body.pagestart
-     var end=req.body.pageend
-     console.log(srt)
-     console.log(end)
-     console.log(req.files.files[0].path);
-     const files = []
-     if (req.files) 
-     {
-        files.push(req.files.files[0].path)
-        var pg = scissors(files[0]).getNumPages()
-        var pdf1=scissors(files[0]).range(srt,end)
-        pdf1.pdfStream()
-        .pipe(fs.createWriteStream('out1.pdf'))
-        .on('finish', function(){
-        console.log("We're done!");
-        res.download("out1.pdf", (err) => {
-                if (err) {
-                    files.forEach(file => {
-                        console.log(file.split('\\')[1]);
-                    })
-                    res.send("Some error takes place in downloading the file")
-
-                }
-                fs.unlinkSync("out1.pdf")
-                files.forEach(file => {
-                    console.log(file.split('\\')[1]);
-            })
-        })
-   }).on('error',function(err){
-     throw err;
-   });
-    }
-})
 const compresspdf1 = function (req, file, callback) {
     var ext = path.extname(file.originalname);
     callback(null, true);
