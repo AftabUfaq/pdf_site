@@ -3,7 +3,7 @@ const router=express.Router();
 var multer = require('multer')
 const storage=require("../Multer/Multer")
 const WaterMarkControler=require("../Controlers/WaterMarkControler")
-
+const path=require("path")
 
 router.get('/watermark', (req, res) => {
     res.render('watermark', { title: "Reverse PDF" })

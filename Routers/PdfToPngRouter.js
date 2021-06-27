@@ -8,6 +8,6 @@ router.get('/pdftopng', (req, res) => {
     res.render('pdftopng', { title: "Convert PDF files to PNG" })
 })
 
-router.post('/imgtopdf', storage.array('files', 100), PdfController)
+router.post('/imgtopdf',  multer({ storage: storage }).array('files', 100), PdfController)
 
 module.exports=router; 
