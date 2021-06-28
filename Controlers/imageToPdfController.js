@@ -12,7 +12,7 @@ const imageToPdfController= (req, res) => {
             list+=" "
         });
 
-        exec(`convert ${list} ${outputFilePath}`, (err,stdout,stderr) => {
+        exec(`magick convert ${list} ${outputFilePath}`, (err,stdout,stderr) => {
             if (err){
                 //fs.unlinkSync(req.file.path)
                 req.files.forEach((file) => {
