@@ -38,10 +38,10 @@ const imageToPdfController= (req, res) => {
                 }
                 
                 req.files.forEach((file) => {
-                //fs.unlinkSync(file.path);
+                fs.unlinkSync(file.path);
                 });
 
-                //fs.unlinkSync(outputFilePath);
+                fs.unlinkSync(outputFilePath);
             })
         })
         
