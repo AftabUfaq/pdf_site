@@ -21,8 +21,6 @@ app.use("/", pdftoppt);
 const imgpdfRouter = require("./Routers/imageToPdfRouter.js");
 app.use("/", imgpdfRouter);
 
-const htmlToPdfRouter = require("./Routers/htmlToPdfRouter.js");
-app.use("/", htmlToPdfRouter);
 
 const unlockPdfRouter = require("./Routers/unlockPdfRouter.js");
 app.use("/", unlockPdfRouter);
